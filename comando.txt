@@ -1,1 +1,0 @@
-xinit ./snes9x-gtk /home/fipy/Proyecto/waybackgm/pisnes/roms/Legend\ of\ Zelda\,\ The\ -\ A\ Link\ to\ the\ Past\ \(U\)\ \[\!\].zip  -- :0 vt1
