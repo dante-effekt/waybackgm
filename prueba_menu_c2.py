@@ -5,72 +5,193 @@ Created on Sat Dec  2 10:58:04 2023
 @author: Escritorio
 """
 
-import os
 import tkinter as tk
-import subprocess
+import subprocess as sp
 import time
 import threading
 import psutil
 import shutil
+import os
+import pyudev
+from evdev import InputDevice, ecodes
+import evdev
+import pyautogui
 
+pyautogui.FAILSAFE = False
 directorio_actual = os.getcwd()
 directorio = directorio_actual
+#directorio_usb = '/media/fipy/SAMSUNG USB'
+
+# Busca el dispositivo de entrada del joystick
+devices = [InputDevice(fn) for fn in evdev.list_devices()]
+
+for device in devices:
+    if "event9" in device.path:
+        joystick = device
+        break
+else:
+    print("No se encontró un joystick.")
+    sys.exit(1)
+
+print(f"Joystick detectado: {joystick.name}")
 
 def ejecutar_snes9x(nombre_archivo):
     ruta_archivo = os.path.join(directorio, nombre_archivo)
     comando = f"-fullscreen snes9x {ruta_archivo}"
-    subprocess.run(comando, shell=True)
+    sp.run(comando, shell=True)
 
 def cargar_archivos():
     return [archivo for archivo in os.listdir(directorio) if archivo.endswith('.smc')]
+
+def on_tecla_arriba():
+    selected_index = menu.curselection()
+    if selected_index:
+        new_index = selected_index[0] - 1
+        menu.selection_clear(0, tk.END)  # Limpiar la selección actual
+        menu.selection_set(new_index)    # Establecer nueva selección
+        menu.see(new_index)              # Hacer visible el nuevo ítem si está fuera de la vista
+
+def on_tecla_abajo():
+    selected_index = menu.curselection()
+    if selected_index and selected_index[0] < menu.size() - 1:
+        new_index = selected_index[0] + 1
+        menu.selection_clear(0, tk.END)
+        menu.selection_set(new_index)
+        menu.see(new_index)
+
 
 def on_seleccion(event):
     widget = event.widget
     seleccionado = widget.get(widget.curselection())
     ejecutar_snes9x(seleccionado)
 
+
+def on_clic_izquierdo():
+    selected_index = menu.curselection()
+    if selected_index:
+        seleccionado = menu.get(selected_index[0])
+        ejecutar_snes9x(seleccionado)
+
+
 def salir(event):
     app.destroy()
 
+def joystick_control():
+    # Lógica para controlar el menú con el joystick izquierdo
+    #pyautogui.moveTo(-10,y)
+    y = 21
+    for event in joystick.read_loop():
+        
+        if event.type == ecodes.EV_ABS and event.code == 17:
+            if event.value == 1:
+                y = y + 20
+                print('cruz abajo')
+                pyautogui.moveTo(0,y)
+                print(pyautogui.position())
+                
+                # Lógica para hacer que se desplace hacia abajo
+                # menu.yview_scroll(1, "units")
+                #on_tecla_abajo()
+            elif event.value == -1:
+                print('cruz arriba')
+                y = y - 20
+                pyautogui.moveTo(0, y)
+                print(pyautogui.position())
+                # Lógica para hacer que se desplace hacia arriba
+                #menu.yview_scroll(-1, "units")
+                #on_tecla_arriba()
+        elif event.type == ecodes.EV_KEY and event.code == 316:  # Código para el botón A
+            if event.value == 1:
+                pyautogui.click()
+                print('Botón XBOX presionado')
+                # Lógica para hacer lo mismo que el clic izquierdo del mouse
+                #on_clic_izquierdo()
+                
+        elif event.type == ecodes.EV_KEY and event.code == 307:  # Código para el botón A
+            if event.value == 1:
+                print('Botón X presionado')
+                # Lógica para hacer lo mismo que el clic izquierdo del mouse
+                app.destroy()
+        elif event.type == ecodes.EV_KEY and event.code == 305:  # Código para el botón A
+            if event.value == 1:
+                print('Botón B presionado')
+                # Lógica para hacer lo mismo que el clic izquierdo del mouse
+                #ventana_usb.destroy()
+                cerrar_ventana()
+#Definimos las funciones necesarias para detectar la USB
+def dev_stats(path):
+    photos = []
+    for file in os.listdir(path):
+        if file.endswith(".jpg") \
+        or file.endswith(".png"):
+            photos.append(path+"/"+file)
+    print("{} has {} photos.".format(path, len(photos)))
+    return photos
+
+#Función para imprimir las propiedades de un dispositivo
+def print_dev_info(device):
+    print("Device sys_path: {}".format(device.sys_path))
+    print("Device sys_name: {}".format(device.sys_name))
+    print("Device sys_number: {}".format(device.sys_number))
+    print("Device subsystem: {}".format(device.subsystem))
+    print("Device device_type: {}".format(device.device_type))
+    print("Device is_initialized: {}".format(device.is_initialized))
+
+#Función para obtener el punto de montaja de un dispositivo USB
+def get_mount_point(path):
+    args = ["findmnt", "-unl", "-S", path]
+    cp = sp.run(args, capture_output=True, text=True)
+    out = cp.stdout.split(" ")[0]
+    return out
+
+#Funcion manejadora de eventos asociada al Monitor-Observer, que cambia una bandera en caso de insertar o remover una usb
+def check_dev_events(action, device): 
+    global usb
+    global dispositivo
+    if (action == "add"): #Si se añade una usb
+        usb = 1
+        print_dev_info(device)
+        dispositivo = device #Pasar el objeto dispositivo a la variable global
+    if (action == "remove"): #Si se retira una usb
+        usb = 0
+
+
 def detectar_usb():
-    dispositivos_previos = set(psutil.disk_partitions())
-
+    global dispositivo
     while True:
-        time.sleep(1)
-        dispositivos_actuales = set(psutil.disk_partitions())
+        if (usb==0):
+            print("No se ha ingresado un usb")
+            time.sleep(1)
+        if (usb==1):
+            usb_nuevo = get_mount_point("/dev/" + dispositivo.sys_name)
+            print("La ruta del dispositivo es: " + usb_nuevo)
+            mostrar_contenido_usb(usb_nuevo)
 
-        dispositivo_nuevo = dispositivos_actuales - dispositivos_previos
-        dispositivo_nuevo_condicion = len(dispositivos_actuales) - len(dispositivos_previos)
-        if dispositivo_nuevo_condicion == 1:
-            dispositivo_nuevo = dispositivo_nuevo.pop()
-            # Mostrar la ventana desde el hilo principal
-            app.after(0, lambda: mostrar_contenido_usb(dispositivo_nuevo))
-            dispositivo_nuevo_condicion = 0
+        
+def mostrar_contenido_usb(ruta_dispositivo):
+    global dispositivo
 
-        dispositivos_previos = dispositivos_actuales
-
-def mostrar_contenido_usb(dispositivo):
-    ruta_dispositivo = os.path.join(dispositivo.device, '')
     # Copiar archivos desde la USB al directorio
     app.after(0, lambda: copiar_archivos_smc(ruta_dispositivo))
     
-    if dispositivo.device in ventanas:
+    if dispositivo in ventanas:
         return
     
+    print("La ruta del dispositivo es: " + ruta_dispositivo)
     archivos = [archivo for archivo in os.listdir(ruta_dispositivo) if archivo.endswith('.smc')]
     ventana_usb = tk.Toplevel()
     ventana_usb.overrideredirect(True)
 
-    mensaje = f'Archivos en {dispositivo.device}:\n\n'
+    mensaje = f'Archivos en {dispositivo}:\n\n'
     mensaje += '\n'.join(archivos)
 
     etiqueta = tk.Label(ventana_usb, text=mensaje, justify='left', anchor='w')
     etiqueta.pack()
 
-    ventanas[dispositivo.device] = ventana_usb
+    ventanas[dispositivo] = ventana_usb
 
     def cerrar_ventana(event):
-        ventanas.pop(dispositivo.device, None)
+        ventanas.pop(dispositivo, None)
         ventana_usb.destroy()
         actualizar_lista_archivos()
 
@@ -84,6 +205,7 @@ def mostrar_contenido_usb(dispositivo):
     ventana_usb.geometry('+{}+{}'.format(x_pantalla, y_pantalla))
 
     ventana_usb.mainloop()
+
 
 def copiar_archivos_smc(desde_usb, a_directorio=directorio):
     try:
@@ -126,7 +248,22 @@ for archivo in archivos:
 menu.bind("<ButtonRelease-1>", on_seleccion)
 app.bind("<Escape>", salir)
 
+#Líneas que relacionan el Monitor-Observer del contexto del hardware con tal de observar cambios en los dispositivos
+context = pyudev.Context()
+monitor = pyudev.Monitor.from_netlink(context)
+monitor.filter_by(subsystem="block", device_type="partition")        
+observer = pyudev.MonitorObserver(monitor, check_dev_events, name='monitor-observer')
+observer.daemon #MonitorObserver sera un hilo demonio
+observer.start()
+
+#Inicia un hilo para la detección de las USB
 hilo_usb = threading.Thread(target=detectar_usb)
+hilo_usb.daemon #Es importante que este hilo sea demonio
 hilo_usb.start()
+
+# Inicia un hilo para el control del joystick
+hilo_joystick = threading.Thread(target=joystick_control)
+hilo_joystick.start()
+
 
 app.mainloop()
