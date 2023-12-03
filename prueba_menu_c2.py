@@ -47,7 +47,7 @@ def dev_stats(path):
     print("{} has {} photos.".format(path, len(photos)))
     return photos
 
-
+#Función para imprimir las propiedades de un dispositivo
 def print_dev_info(device):
     print("Device sys_path: {}".format(device.sys_path))
     print("Device sys_name: {}".format(device.sys_name))
@@ -56,20 +56,15 @@ def print_dev_info(device):
     print("Device device_type: {}".format(device.device_type))
     print("Device is_initialized: {}".format(device.is_initialized))
 
-
-def auto_mount(path):
-    args = ["udisksctl", "mount", "-b", path]
-    sp.run(args)
-
-
+#Función para obtener el punto de montaja de un dispositivo USB
 def get_mount_point(path):
     args = ["findmnt", "-unl", "-S", path]
     cp = sp.run(args, capture_output=True, text=True)
     out = cp.stdout.split(" ")[0]
     return out
 
-
-def check_dev_events(action, device): #Funcion manejadora de eventos
+#Funcion manejadora de eventos asociada al Monitor-Observer, que cambia una bandera en caso de insertar o remover una usb
+def check_dev_events(action, device): 
     global usb
     global dispositivo
     if (action == "add"): #Si se añade una usb
@@ -79,6 +74,7 @@ def check_dev_events(action, device): #Funcion manejadora de eventos
     if (action == "remove"): #Si se retira una usb
         usb = 0
 
+#Líneas que relacionan el Monitor-Observer del contexto del hardware con tal de observar cambios en los dispositivos
 context = pyudev.Context()
 monitor = pyudev.Monitor.from_netlink(context)
 monitor.filter_by(subsystem="block", device_type="partition")        
@@ -91,7 +87,7 @@ def detectar_usb():
     global dispositivo
     while True:
         if (usb==0):
-            print("NO se ha ingresado un usb")
+            print("No se ha ingresado un usb")
             time.sleep(1)
         if (usb==1):
             usb_nuevo = get_mount_point("/dev/" + dispositivo.sys_name)
@@ -101,7 +97,7 @@ def detectar_usb():
 
 def mostrar_contenido_usb(ruta_dispositivo):
     global dispositivo
-    #ruta_dispositivo = os.path.join(dispositivo, ruta_dispositivo)
+
     # Copiar archivos desde la USB al directorio
     app.after(0, lambda: copiar_archivos_smc(ruta_dispositivo))
     
@@ -179,7 +175,7 @@ menu.bind("<ButtonRelease-1>", on_seleccion)
 app.bind("<Escape>", salir)
 
 hilo_usb = threading.Thread(target=detectar_usb)
-hilo_usb.daemon
+hilo_usb.daemon #Es importante que este hilo sea demonio
 hilo_usb.start()
 
 app.mainloop()
