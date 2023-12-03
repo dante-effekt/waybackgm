@@ -1,0 +1,52 @@
+xboxdrv \
+    --evdev /dev/input/by-id/usb-Microsoft_Controller_3032475230303836393336363334-event-joystick \
+    --silent \
+    --detach-kernel-driver \
+    --deadzone 500 \
+    --mimic-xpad \
+    --evdev-absmap ABS_X=x1,ABS_Y=y1,ABS_RX=x2,ABS_RY=y2,ABS_Z=lt,ABS_RZ=rt,ABS_HAT0X=dpad_x,ABS_HAT0Y=dpad_y \
+    --evdev-keymap BTN_A=a,BTN_B=b,BTN_X=x,BTN_Y=y,BTN_TL=lb,BTN_TR=rb,BTN_THUMBL=tl,BTN_THUMBR=tr,BTN_MODE=guide,BTN_SELECT=back,BTN_START=start \
+    --axismap -Y1=Y1,-Y2=Y2
+
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          xboxdrv
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start xboxdrv on boot
+### END INIT INFO
+
+case "$1" in
+    start)
+        echo "Starting xboxdrv"
+        /usr/bin/xboxdrv \
+    	    --evdev /dev/input/by-id/usb-Microsoft_Controller_3032475230303836393336363334-event-joystick \
+            --silent \
+            --detach-kernel-driver \
+            --deadzone 500 \
+            --mimic-xpad \
+            --evdev-absmap ABS_X=x1,ABS_Y=y1,ABS_RX=x2,ABS_RY=y2,ABS_Z=lt,ABS_RZ=rt,ABS_HAT0X=dpad_x,ABS_HAT0Y=dpad_y \
+            --evdev-keymap BTN_A=a,BTN_B=b,BTN_X=x,BTN_Y=y,BTN_TL=lb,BTN_TR=rb,BTN_THUMBL=tl,BTN_THUMBR=tr,BTN_MODE=guide,BTN_SELECT=back,BTN_START=start \
+            --axismap -Y1=Y1,-Y2=Y2\
+		&
+        ;;
+    stop)
+        echo "Stopping xboxdrv"
+        killall xboxdrv
+        ;;
+    *)
+        echo "Usage: /etc/init.d/xboxdrv-startup {start|stop}"
+        exit 1
+        ;;
+esac
+
+exit 0
+
+
+sudo /etc/init.d/xboxdrv-startup start
+
+para pillow: 
+sudo apt-get install libjpeg-dev zlib1g-dev libtiff5-dev libopenjp2-7-dev
+
