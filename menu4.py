@@ -8,17 +8,19 @@ import os
 from evdev import InputDevice, ecodes
 import evdev
 import pyautogui
+import sys
 
 pyautogui.FAILSAFE = False
 directorio_actual = os.getcwd()
-directorio = directorio_actual
+# directorio = directorio_actual
+directorio = "/media/bytehxz/ZX/"
 #directorio_usb = '/media/fipy/SAMSUNG USB'
 
 # Busca el dispositivo de entrada del joystick
 devices = [InputDevice(fn) for fn in evdev.list_devices()]
 
 for device in devices:
-    if "event9" in device.path:
+    if "event7" in device.path:
         joystick = device
         break
 else:
