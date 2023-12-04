@@ -1,0 +1,16 @@
+Hay que poner el archivo .wav en la carpeta soundboot
+instalar el siguiente en caso de no tenerlo:
+
+sudo apt-get install alsa-utils
+
+Ajustar archivo.sh de acuerdo a la ruta en que está.
+
+Luego  abrir la terminal y ejecutar lo siguiente:
+
+sudo nano /etc/rc.local
+
+Añadir hasta el final, antes de return 0;, la siguiente linea:
+
+/usr/bin/aplay /home/fipy/Desktop/soundboot/jing.wav
+
+Cerramos el archivo y reiniciamos
