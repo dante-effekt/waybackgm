@@ -1,0 +1,31 @@
+La imagen debe ser PNG en tamaño 100x100 px
+Se puede escalar con imagemagick, si no se tiene se instala con:
+
+sudo apt-get install imagemagick
+
+Para escalar forzadamente es con el siguiente:
+
+convert splash.png -resize 100x100\! splash2.png
+
+Copiamos la carpeta pisplash, sugiero tener las imagenes dentro de ese
+directorio. Nos colocamos dentro del directorio para poder ejecutarlo, 
+pero antes hay que cambiar los permisos.
+
+chmod +x pisplash.sh
+
+Para reemplazar la imagen hay que antes revisar que la ruta del path
+sea la correcta, en ese caso uso debian-theme y sé que tiene dos imagenes
+relevantes, debian.png y logo.png.
+
+El tema tambien debe configurarse en el siguiente archivo:
+sudo nano  /etc/plymouth/plymouthd.conf
+
+Ya con eso, entonces nos colocamos en el directorio desde terminal
+y ejecutamos el siguiente:
+
+bash pisplash.sh /home/fipy/Desktop/pisplash/splash3.png
+//bash pisplash.sh [img.png]
+
+Se va a actualizar automaticamente initframs, luego de eso procedemos
+a reiniciar y listo.
+
