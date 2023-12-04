@@ -1,0 +1,95 @@
+Primero hay que ver que reconozca el control:
+
+lsusb
+
+si aparece entonces podemos ejecutar xboxdrv, estando dentro del 
+directorio, si da error entonces intentar con sudo.
+
+Si deplano no reconoce el control entonces ejecutamos el siguiente:
+
+ls /dev/input/by-id/
+
+De aqui vamos a identificar nuestro control y copiar el que tenga 'event'
+
+Posteriormente lo vamos  a reemplazar en el siguiente comando:
+
+sudo xboxdrv \
+    --evdev /dev/input/by-id/<REEMPLAZAR> \
+    --silent \
+    --detach-kernel-driver \
+    --deadzone 500 \
+    --mimic-xpad \
+    --evdev-absmap ABS_X=x1,ABS_Y=y1,ABS_RX=x2,ABS_RY=y2,ABS_Z=lt,ABS_RZ=rt,ABS_HAT0X=dpad_x,ABS_HAT0Y=dpad_y \
+    --evdev-keymap BTN_A=a,BTN_B=b,BTN_X=x,BTN_Y=y,BTN_TL=lb,BTN_TR=rb,BTN_THUMBL=tl,BTN_THUMBR=tr,BTN_MODE=guide,BTN_SELECT=back,BTN_START=start \
+    --axismap -Y1=Y1,-Y2=Y2
+    
+
+Si funciona entonces ya nos dira en que event y js está disponible, pero
+habra que mantenerlo abierto, si cerramos o precionamos ctrl+c puede que
+lo deshabilite, para esto creamos el siguiente script init.d bash.
+
+Creamos primero el archivo con:
+sudo nano /etc/init.d/xboxdrv-startup
+
+Ahora copiamos lo siguiente al archivo:
+
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          xboxdrv
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start xboxdrv on boot
+### END INIT INFO
+
+case "$1" in
+    start)
+        echo "Starting xboxdrv"
+        /usr/local/bin/xboxdrv \
+    	    --evdev /dev/input/by-id/<REEMPLAZAR> \
+            --silent \
+            --detach-kernel-driver \
+            --deadzone 500 \
+            --mimic-xpad \
+            --evdev-absmap ABS_X=x1,ABS_Y=y1,ABS_RX=x2,ABS_RY=y2,ABS_Z=lt,ABS_RZ=rt,ABS_HAT0X=dpad_x,ABS_HAT0Y=dpad_y \
+            --evdev-keymap BTN_A=a,BTN_B=b,BTN_X=x,BTN_Y=y,BTN_TL=lb,BTN_TR=rb,BTN_THUMBL=tl,BTN_THUMBR=tr,BTN_MODE=guide,BTN_SELECT=back,BTN_START=start \
+            --axismap -Y1=Y1,-Y2=Y2\
+		&
+        ;;
+    stop)
+        echo "Stopping xboxdrv"
+        killall xboxdrv
+        ;;
+    *)
+        echo "Usage: /etc/init.d/xboxdrv-startup {start|stop}"
+        exit 1
+        ;;
+esac
+
+exit 0
+
+
+Vemos donde esta instalado xboxdrv con el siguiente comando:
+
+which xboxdrv
+
+Copiamos la ruta y verificamos que sea la misma que tenemos en el script
+sino la reemplazamos.
+
+ahora damos permisos:
+
+sudo chmod +x /usr/local/bin/xboxdrv
+
+Si todo está bien entonces podremos iniciar el servicio con:
+
+sudo /etc/init.d/xboxdrv-startup start
+
+Para detenerlo basta con poner: 
+
+sudo /etc/init.d/xboxdrv-startup stop
+
+Para probar que funcione el mapeo entonces se hace con:
+
+evtest /dev/input/event9
+
