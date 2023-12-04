@@ -16,9 +16,10 @@ function installxbox(){
    libudev-dev \
    x11proto-core-dev \
    libdbus-glib-1-dev \
-   evdev \
-   pyautogui \
    scons
+  
+  pip install evdev
+  pip install pyautogui
 
   echo -e "[!] Clonando el repositorio xboxdrv "
   sleep 2
