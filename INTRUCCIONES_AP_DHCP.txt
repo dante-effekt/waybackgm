@@ -1,0 +1,80 @@
+Hay que configurar primero como AP y el DHCP, a continuacion 
+listo todo lo que se necesita:
+
+sudo apt-get install dnsmasq hostapd
+sudo pip3 install -U python-magic
+
+sudo systemctl stop dnsmasq
+sudo systemctl stop hostapd
+
+Ahora nos dirigimos a /etc/dhcpcd.conf
+
+--Creamos el arcivo si es necesario.
+interface wlan0
+static ip_address=192.168.28.254/24
+nohook wpa_supplicant
+
+sudo service dhcpcd restart
+
+Ahora nos dirigimos a /etc/dnsmasq.conf
+# Use the require wireless interface - usually wlan0
+interface=wlan0
+# Reserve 20 IP addresses, set the subnet mask, and lease time
+dhcp-range=192.168.28.200,192.168.28.220,255.255.255.0,24h
+
+
+systemctl start dnsmasq
+
+Ahora nos dirigimos a /etc/hostapd/hostapd.conf y colocamos:
+
+# Wireless interface
+interface=wlan0
+# Specification: IEEE802.11
+driver=nl80211
+# The SSID or name of the network
+ssid=fipy-DDR
+# Password of the network
+wpa_passphrase=12345678
+wpa=2
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+# Mode and frequency of operation
+hw_mode=g
+# Broadcast channel
+channel=5
+wmm_enabled=0
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+rsn_pairwise=CCMP
+
+
+Ahora edite el archivo /etc/default/hostapd y reemplace la línea que comienza con #DAEMON_CONF con:
+DAEMON_CONF="/etc/hostapd/hostapd.conf"
+
+Ejecutamos killall wpa_supplicant
+
+y los siguientes
+
+sudo systemctl unmask hostapd
+sudo systemctl enable hostapd
+sudo systemctl start hostapd
+Verifique que los servicios se están ejecutando
+sudo systemctl status hostapd
+sudo systemctl status dnsmasq
+
+Ahora ya hay que activar SSH y VNC Server en la raspberry
+
+En el cliente abrimos VNC Connect, ingresamos la ip de la raspberry,
+nos pide el usuario y contraseña.
+
+Ahora revisamos la resolucion de la pantalla:
+Inicio > Preferencias > Raspberry Pi Configuration > Display
+
+Ahora configuramos la localizacion y zona horaria:  
+Inicio > Preferencias > Raspberry Pi Configuration > Localization
+
+Reiniciamos la raspberry pi
+
+Fillezilla solo necesita el cliente poner la ip de la rasp
+usuario, contraseña y el puerto 22.
