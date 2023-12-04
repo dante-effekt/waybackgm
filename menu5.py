@@ -16,17 +16,20 @@ import pyudev
 from evdev import InputDevice, ecodes
 import evdev
 import pyautogui
+import sys
 
 pyautogui.FAILSAFE = False
 directorio_actual = os.getcwd()
 directorio = directorio_actual
+usb = 0
+dispositivo = 0
 #directorio_usb = '/media/fipy/SAMSUNG USB'
 
 # Busca el dispositivo de entrada del joystick
 devices = [InputDevice(fn) for fn in evdev.list_devices()]
 
 for device in devices:
-    if "event9" in device.path:
+    if "event8" in device.path:
         joystick = device
         break
 else:
@@ -37,7 +40,7 @@ print(f"Joystick detectado: {joystick.name}")
 
 def ejecutar_snes9x(nombre_archivo):
     ruta_archivo = os.path.join(directorio, nombre_archivo)
-    comando = f"-fullscreen snes9x {ruta_archivo}"
+    comando = f"/home/fipy/Documents/snes9x-1.60/gtk/build/snes9x-gtk {ruta_archivo}"
     sp.run(comando, shell=True)
 
 def cargar_archivos():
@@ -100,33 +103,27 @@ def joystick_control():
                 # Lógica para hacer que se desplace hacia arriba
                 #menu.yview_scroll(-1, "units")
                 #on_tecla_arriba()
-        elif event.type == ecodes.EV_KEY and event.code == 316:  # Código para el botón A
+        elif event.type == ecodes.EV_KEY and event.code == 315:  # Código para el botón A
             if event.value == 1:
                 pyautogui.click()
                 print('Botón XBOX presionado')
                 # Lógica para hacer lo mismo que el clic izquierdo del mouse
                 #on_clic_izquierdo()
                 
-        elif event.type == ecodes.EV_KEY and event.code == 307:  # Código para el botón A
+        elif event.type == ecodes.EV_KEY and event.code == 314:  # Código para el botón A
             if event.value == 1:
                 print('Botón X presionado')
                 # Lógica para hacer lo mismo que el clic izquierdo del mouse
                 app.destroy()
-        elif event.type == ecodes.EV_KEY and event.code == 305:  # Código para el botón A
+        elif event.type == ecodes.EV_KEY and event.code == 304:  # Código para el botón A
             if event.value == 1:
                 print('Botón B presionado')
                 # Lógica para hacer lo mismo que el clic izquierdo del mouse
                 #ventana_usb.destroy()
-                cerrar_ventana()
+                #cerrar_ventana()
+
+
 #Definimos las funciones necesarias para detectar la USB
-def dev_stats(path):
-    photos = []
-    for file in os.listdir(path):
-        if file.endswith(".jpg") \
-        or file.endswith(".png"):
-            photos.append(path+"/"+file)
-    print("{} has {} photos.".format(path, len(photos)))
-    return photos
 
 #Función para imprimir las propiedades de un dispositivo
 def print_dev_info(device):
@@ -157,15 +154,16 @@ def check_dev_events(action, device):
 
 
 def detectar_usb():
+    global usb
     global dispositivo
     while True:
-        if (usb==0):
-            print("No se ha ingresado un usb")
-            time.sleep(1)
-        if (usb==1):
+        time.sleep(4) #Espera un poco para dar tiempo de montaje a la USB
+        if (usb == 1):
             usb_nuevo = get_mount_point("/dev/" + dispositivo.sys_name)
             print("La ruta del dispositivo es: " + usb_nuevo)
             mostrar_contenido_usb(usb_nuevo)
+            usb = 0 #Reinicia la bandera
+        pass
 
         
 def mostrar_contenido_usb(ruta_dispositivo):
@@ -261,8 +259,10 @@ hilo_usb = threading.Thread(target=detectar_usb)
 hilo_usb.daemon #Es importante que este hilo sea demonio
 hilo_usb.start()
 
+
 # Inicia un hilo para el control del joystick
 hilo_joystick = threading.Thread(target=joystick_control)
+hilo_joystick.daemon
 hilo_joystick.start()
 
 
