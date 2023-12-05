@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 # -*- coding: utf-8 -*-
 """
 Created on Mon Dec  4 10:38:00 2023
@@ -11,6 +10,7 @@ Created on Mon Dec  4 10:38:00 2023
 #================================MODULOS NECESARIOS===========================
 #=============================================================================
 import tkinter as tk
+from tkinter import PhotoImage
 import subprocess as sp
 import time
 import threading
@@ -88,6 +88,11 @@ def on_clic_izquierdo():
         seleccionado = menu.get(selected_index[0])
         ejecutar_snes9x(seleccionado)
 
+def apagar():
+    os.system("shutdown now")
+
+def reiniciar():
+    os.system("reboot")
 
 def salir(event):
     app.destroy()
@@ -310,6 +315,16 @@ archivos = cargar_archivos()
 
 app = tk.Tk()
 app.attributes("-fullscreen", True)
+icono_apagar = PhotoImage(file="./icons/apagadoScale.png")  # Reemplaza "apagar_icono.png" con la ruta de tu propio ícono
+icono_reiniciar = PhotoImage(file="./icons/restartScale.png")  # Reemplaza "reiniciar_icono.png" con la ruta de tu propio ícono
+
+# Botón de apagar
+btn_apagar = tk.Button(app, text="Apagar", command=apagar, bg="red", fg="white", image=icono_apagar, compound="right")
+btn_apagar.pack(side=tk.RIGHT, padx=10, pady=10)
+
+# Botón de reiniciar
+btn_reiniciar = tk.Button(app, text="Reiniciar", command=reiniciar, bg="yellow", fg="black", image=icono_reiniciar, compound="right")
+btn_reiniciar.pack(side=tk.RIGHT, padx=10, pady=10)
 
 menu = tk.Listbox(app, selectbackground="lightblue", bg="white", fg="black", font=("Courier", 14))
 menu.pack(side="left", fill="both", expand=True)
