@@ -1,7 +1,8 @@
 # waybackgm
 Implementation of retro game emulation for Raspberry Pi 4.
 
-Autores: Arguello León Dante Moisés, 
+Autores: 
+Arguello León Dante Moisés, 
 Caballero Hernández Juan Daniel, 
 Jimenez García Rodrigo Gaudencio
 
