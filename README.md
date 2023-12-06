@@ -1,5 +1,6 @@
 # waybackgm
 Implementation of retro game emulation for Raspberry Pi 4.
+Autores: Arguello León Dante Moisés, Caballero Hernández Juan Daniel, Jimenez García Rodrigo Gaudencio
 
 ## Instalación de dependencias
 Para instalar los requerimientos y dependencias necesarias es necesario ejecutar los siguientes comandos
