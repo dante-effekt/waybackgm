@@ -9,7 +9,8 @@
 # WaybackGM allows you to use a Raspberry Pi as a retro console that uses the open source emulator 
 # Snes9x, this program allows you to display a graphical interface with your available roms, detect 
 # the presence of USB devices with new games and copy them. It also allows you to restart or turn off 
-# your console.
+# your console. 
+# It allows you to control the graphical interface through a PS3 controller using the xboxdrv module.
 
 #=============================================================================
 #================================MODULOS NECESARIOS===========================
