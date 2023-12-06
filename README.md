@@ -4,6 +4,16 @@ Implementation of retro game emulation for Raspberry Pi 4.
 ## Instalación de dependencias
 Para instalar los requerimientos y dependencias necesarias es necesario ejecutar los siguientes comandos
 
+En esta parte hemos implementado un script que nos automatiza la instalación del driver y el emulador por lo que se presentan las instrucciones para descargar el proyecto y ejecutar el script
+finalmente las modificaciones en los servicios de acceso remoto debido a la naturaleza de la configuración de estos se requiere que se hagan de manera manual.
+
+```bash
+git clone https://github.com/dante-effekt/waybackgm.git 
+cd waybackgm
+chmod +x autorun.sh
+./autorun.sh
+```
+
 ### Instalación de xboxdrv
 
 ```bash
@@ -209,20 +219,20 @@ systemctl start dnsmasq
 Ahora nos dirigimos a /etc/hostapd/hostapd.conf y colocamos:
 
 ```bash
-\# Wireless interface
+# Wireless interface
 interface=wlan0
-\# Specification: IEEE802.11
+# Specification: IEEE802.11
 driver=nl80211
-\# The SSID or name of the network
+# The SSID or name of the network
 ssid=fipy-DDR
-\# Password of the network
+# Password of the network
 wpa_passphrase=12345678
 wpa=2
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=TKIP
-\# Mode and frequency of operation
+# Mode and frequency of operation
 hw_mode=g
-\# Broadcast channel
+# Broadcast channel
 channel=5
 wmm_enabled=0
 macaddr_acl=0
@@ -235,7 +245,7 @@ Ahora edite el archivo /etc/default/hostapd y reemplace la línea que comienza c
 DAEMON\_CONF="/etc/hostapd/hostapd.conf"
 
 ```bash
-Ejecutamos killall wpa\_supplicant
+Ejecutamos killall wpa_supplicant
 ```
 
 y los siguientes
@@ -264,3 +274,71 @@ Reiniciamos la raspberry pi
 
 Fillezilla solo necesita el cliente poner la ip de la rasp
 usuario, contraseña y el puerto 22.
+
+# Configuración para que las Raspberry tenga sonido al encender
+
+Hay que poner el archivo .wav en la carpeta soundboot
+instalar el siguiente en caso de no tenerlo:
+
+```bash
+sudo apt-get install alsa-utils
+```
+
+Ajustar archivo.sh de acuerdo a la ruta en que está.
+
+Luego  abrir la terminal y ejecutar lo siguiente:
+
+```bash
+sudo nano /etc/rc.local
+```
+
+Añadir hasta el final, antes de return 0;, la siguiente linea:
+
+```bash
+/usr/bin/aplay /home/fipy/Desktop/soundboot/jing.wav
+```
+
+Cerramos el archivo y reiniciamos
+
+# Ajuste de la imagen de inicio
+
+La imagen debe ser PNG en tamaño 100x100 px
+Se puede escalar con imagemagick, si no se tiene se instala con:
+
+```bash
+sudo apt-get install imagemagick
+```
+
+Para escalar forzadamente es con el siguiente:
+
+```bash
+convert splash.png -resize 100x100\! splash2.png
+```
+
+Copiamos la carpeta pisplash, sugiero tener las imagenes dentro de ese
+directorio. Nos colocamos dentro del directorio para poder ejecutarlo, 
+pero antes hay que cambiar los permisos.
+
+```bash
+chmod +x pisplash.sh
+```
+
+Para reemplazar la imagen hay que antes revisar que la ruta del path
+sea la correcta, en ese caso uso debian-theme y sé que tiene dos imagenes
+relevantes, debian.png y logo.png.
+
+El tema tambien debe configurarse en el siguiente archivo:
+```bash
+sudo nano  /etc/plymouth/plymouthd.conf
+```
+
+Ya con eso, entonces nos colocamos en el directorio desde terminal
+y ejecutamos el siguiente:
+
+```bash
+bash pisplash.sh /home/fipy/Desktop/pisplash/splash3.png
+//bash pisplash.sh [img.png]
+```
+
+Se va a actualizar automaticamente initframs, luego de eso procedemos
+a reiniciar y listo.
